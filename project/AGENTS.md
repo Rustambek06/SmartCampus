@@ -5,7 +5,17 @@ Smart Campus room availability checker. A single-page client app to check if a s
 
 ## Scope & Constraints
 - Decision-only application: availability checking only.
+- All room and booking data must remain hardcoded fictional fixtures. The app
+  uses a multi-room catalog (carried over from Practice #09); do not fetch,
+  persist, or externalize room or booking data.
 - Forbidden: No backend, database, authentication/login, or saved booking creation/persistence.
+- Forbidden: The `@supabase/supabase-js` dependency in `package.json` is
+  vestigial and must never be imported or used. Do not introduce any other
+  database client.
+- Forbidden: No secrets, API keys, or hardcoded credentials anywhere in the
+  source tree or configuration.
+- Forbidden: No external deployment, publishing, or hosting configuration. The
+  app runs locally via `npm run dev` only.
 - Base code: Work exclusively on the repaired codebase from Practice #08. Do not generate a new application from scratch.
 - Preserve Acceptance Criteria:
   - AC1: Reject `start >= end` and requests in the past.
@@ -29,7 +39,10 @@ Smart Campus room availability checker. A single-page client app to check if a s
   - `npm run build`
   - `npm run lint`
   - `npm run typecheck`
+  - `npm run test`
 - Add Vitest / unit tests for the pure validation function covering AC1 through AC6.
+- Before proposing acceptance, run `npm run test`, `npm run typecheck`,
+  `npm run lint`, and `npm run build`. All four must pass with zero errors.
 - Final report must include:
   1. Files changed
   2. Rationale for modifications

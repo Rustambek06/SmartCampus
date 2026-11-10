@@ -41,3 +41,13 @@ export function collectEquipment(rooms: Room[]): string[] {
   }
   return [...set].sort((a, b) => a.localeCompare(b));
 }
+
+// F5: if the active room is no longer in the filtered list, fall back to the
+// first visible room (or null when the list is empty).
+export function resolveActiveRoomId(
+  filteredRooms: Room[],
+  activeId: string,
+): string | null {
+  const stillVisible = filteredRooms.find((r) => r.id === activeId);
+  return stillVisible?.id ?? filteredRooms[0]?.id ?? null;
+}

@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { validateBooking, type ValidationResult } from "@/lib/canBook";
 import { ROOMS, getRoomDayData } from "@/lib/rooms";
-import { filterRooms, collectEquipment } from "@/lib/filterRooms";
+import { filterRooms, collectEquipment, resolveActiveRoomId } from "@/lib/filterRooms";
 import type { DayOffset } from "@/lib/types";
 import { minutesToLabel, nowInMinutes } from "@/lib/time";
 import { Timeline } from "@/components/Timeline";
@@ -41,10 +41,10 @@ export default function App() {
   // F5: if the selected room is filtered out, fall back to the first visible
   // room (or null when empty). This keeps the availability checker bound to
   // a room that actually matches the active filters.
-  const activeRoomId = useMemo(() => {
-    const stillVisible = visibleRooms.find((r) => r.id === roomId);
-    return stillVisible?.id ?? visibleRooms[0]?.id ?? null;
-  }, [visibleRooms, roomId]);
+  const activeRoomId = useMemo(
+    () => resolveActiveRoomId(visibleRooms, roomId),
+    [visibleRooms, roomId],
+  );
 
   // Keep roomId synced to the active room so all downstream lookups are
   // consistent. When the fallback changes (e.g. filters narrowed), update
@@ -55,6 +55,13 @@ export default function App() {
       setResult({ available: false, checked: false });
     }
   }, [activeRoomId, roomId]);
+
+  // Refresh the clock every 60 seconds so the "past time" check stays
+  // accurate when the tab sits open.
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(nowInMinutes(new Date())), 60000);
+    return () => clearInterval(id);
+  }, []);
 
   const dayData = useMemo(
     () => getRoomDayData(activeRoomId ?? "", dayOffset),
@@ -86,7 +93,17 @@ export default function App() {
   const timeInvalid = !validation.ok && validation.code === "INVALID_RANGE";
 
   function handleCheck() {
-    setResult({ available: validation.ok, checked: true });
+    const freshNow = nowInMinutes(new Date());
+    setNowTick(freshNow);
+    const fresh = validateBooking({
+      start,
+      end,
+      now: freshNow,
+      blocked: dayData.blocked,
+      existing,
+      dayOffset,
+    });
+    setResult({ available: fresh.ok, checked: true });
   }
 
   function syncNow() {

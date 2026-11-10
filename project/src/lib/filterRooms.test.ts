@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterRooms, collectEquipment, type FilterCriteria } from "./filterRooms";
+import { filterRooms, collectEquipment, resolveActiveRoomId, type FilterCriteria } from "./filterRooms";
 import type { Room } from "./rooms";
 
 const rooms: Room[] = [
@@ -72,5 +72,19 @@ describe("collectEquipment", () => {
 
   it("returns empty for no rooms", () => {
     expect(collectEquipment([])).toEqual([]);
+  });
+});
+
+describe("resolveActiveRoomId - F5 fallback", () => {
+  it("keeps the active room if it is still in the filtered list", () => {
+    expect(resolveActiveRoomId(rooms.slice(0, 2), "B")).toBe("B");
+  });
+
+  it("falls back to the first available room when the active room is filtered out", () => {
+    expect(resolveActiveRoomId(rooms.slice(0, 2), "C")).toBe("A");
+  });
+
+  it("returns null when no rooms match", () => {
+    expect(resolveActiveRoomId([], "A")).toBeNull();
   });
 });
